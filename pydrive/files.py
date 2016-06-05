@@ -53,7 +53,7 @@ class GoogleDriveFileList(ApiResourceList):
 
     :returns: list -- list of pydrive.files.GoogleDriveFile.
     """
-    self.metadata = self.auth.service.files().list(**dict(self)).execute()
+    self.metadata = self.auth.service.files().list(**dict(self)).execute(http=self.http)
     result = []
     for file_metadata in self.metadata['items']:
       tmp_file = GoogleDriveFile(
@@ -178,7 +178,7 @@ class GoogleDriveFile(ApiAttributeMixin, ApiResource):
     file_id = self.metadata.get('id') or self.get('id')
     if file_id:
       try:
-        metadata = self.auth.service.files().get(fileId=file_id).execute()
+        metadata = self.auth.service.files().get(fileId=file_id).execute(http=self.http)
       except errors.HttpError as error:
         raise ApiRequestError(error)
       else:
@@ -262,7 +262,7 @@ class GoogleDriveFile(ApiAttributeMixin, ApiResource):
     try:
       if self.dirty['content']:
         param['media_body'] = self._BuildMediaBody()
-      metadata = self.auth.service.files().insert(**param).execute()
+      metadata = self.auth.service.files().insert(**param).execute(http=self.http)
     except errors.HttpError as error:
       raise ApiRequestError(error)
     else:
@@ -281,7 +281,7 @@ class GoogleDriveFile(ApiAttributeMixin, ApiResource):
       param = {}
     param['fileId'] = self.metadata.get('id')
     try:
-      metadata = self.auth.service.files().untrash(**param).execute()
+      metadata = self.auth.service.files().untrash(**param).execute(http=self.http)
     except errors.HttpError, error:
       raise ApiRequestError(error)
     else:
@@ -299,7 +299,7 @@ class GoogleDriveFile(ApiAttributeMixin, ApiResource):
       param = {}
     param['fileId'] = self.metadata.get('id')
     try:
-      metadata = self.auth.service.files().trash(**param).execute()
+      metadata = self.auth.service.files().trash(**param).execute(http=self.http)
     except errors.HttpError, error:
       raise ApiRequestError(error)
     else:
@@ -318,7 +318,7 @@ class GoogleDriveFile(ApiAttributeMixin, ApiResource):
       param = {}
     param['fileId'] = self.metadata.get('id')
     try:
-      metadata = self.auth.service.files().delete(**param).execute()
+      metadata = self.auth.service.files().delete(**param).execute(http=self.http)
     except errors.HttpError, error:
       raise ApiRequestError(error)
     else:
@@ -340,7 +340,7 @@ class GoogleDriveFile(ApiAttributeMixin, ApiResource):
     try:
       if self.dirty['content']:
         param['media_body'] = self._BuildMediaBody()
-      metadata = self.auth.service.files().update(**param).execute()
+      metadata = self.auth.service.files().update(**param).execute(http=self.http)
     except errors.HttpError as error:
       raise ApiRequestError(error)
     else:
@@ -362,7 +362,7 @@ class GoogleDriveFile(ApiAttributeMixin, ApiResource):
     param['body'] = self.GetChanges()
     param['fileId'] = self.metadata.get('id')
     try:
-      metadata = self.auth.service.files().patch(**param).execute()
+      metadata = self.auth.service.files().patch(**param).execute(http=self.http)
     except errors.HttpError as error:
       raise ApiRequestError(error)
     else:

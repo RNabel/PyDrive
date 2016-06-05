@@ -56,6 +56,12 @@ def LoadAuth(decoratee):
         self.auth.LocalWebserverAuth()
     if self.auth.service is None:  # Check if drive api is built.
       self.auth.Authorize()
+    # Ensure that a thread-safe HTTP object is provided.
+    if "param" in kwargs and "http" in kwargs["param"]:
+      self.http = kwargs["param"]["http"]  # If each thread creates a thread-safe HTTP object.
+      del kwargs["param"]["http"]
+    else:
+      self.http = self.auth.Get_Http_Object()  # If HTTP object not specified.
     return decoratee(self, *args, **kwargs)
   return _decorated
 
@@ -503,3 +509,8 @@ class GoogleAuth(ApiAttributeMixin, object):
       raise AuthenticationError('No valid credentials provided to authorize')
     self.http = self.credentials.authorize(self.http)
     self.service = build('drive', 'v2', http=self.http)
+
+  def Get_Http_Object(self):
+    http = self.http = httplib2.Http(timeout=self.http_timeout)
+    http = self.credentials.authorize(http)
+    return http
