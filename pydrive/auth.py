@@ -370,15 +370,26 @@ class GoogleAuth(ApiAttributeMixin, object):
     if not client_type in (clientsecrets.TYPE_WEB,
                            clientsecrets.TYPE_INSTALLED):
       raise InvalidConfigError('Unknown client_type of client config file')
+
+    # General settings.
     try:
-      config_index = ['client_id', 'client_secret', 'auth_uri', 'token_uri',
-                     'client_email']
+      config_index = ['client_id', 'client_secret', 'auth_uri', 'token_uri']
       for config in config_index:
         self.client_config[config] = client_info[config]
+
       self.client_config['revoke_uri'] = client_info.get('revoke_uri')
       self.client_config['redirect_uri'] = client_info['redirect_uris'][0]
     except KeyError:
       raise InvalidConfigError('Insufficient client config in file')
+
+    # Service auth related fields.
+    service_auth_config = ['client_email']
+    try:
+      for config in service_auth_config:
+        self.client_config[config] = client_info[config]
+    except KeyError:
+      pass  # The service auth fields are not present, handling code can go here.
+
 
   def LoadServiceConfigSettings(self):
     """Loads client configuration from settings file.
