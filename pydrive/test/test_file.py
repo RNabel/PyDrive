@@ -4,7 +4,7 @@ import os
 import unittest
 import timeout_decorator
 
-from concurrent.futures import ThreadPoolExecutor
+from concurrent.futures import ThreadPoolExecutor, as_completed
 
 from pydrive.auth import GoogleAuth
 from pydrive.drive import GoogleDrive
@@ -168,12 +168,12 @@ class GoogleDriveFileTest(unittest.TestCase):
     class UploadWorker:
         def __init__(self, gdrive_file, generate_http=False):
             self.gdrive_file = gdrive_file
-
+            self.param = {}
             if generate_http:
-                self.http = gdrive_file.auth.Get_Http_Object()
+                self.param = {"http": gdrive_file.auth.Get_Http_Object()}
 
         def run(self):
-            self.gdrive_file.Upload(param={"http": self.http})
+            self.gdrive_file.Upload(param=self.param)
 
     def _parallel_uploader(self, num_of_uploads, num_of_workers, use_per_thread_http=False):
         drive = GoogleDrive(self.ga)
@@ -189,11 +189,16 @@ class GoogleDriveFileTest(unittest.TestCase):
             up_file.SetContentFile(file_name)
             upload_files.append(up_file)
 
+        futures = []
         for i in xrange(num_of_uploads):
             upload_worker = self.UploadWorker(upload_files[i], use_per_thread_http)
-            thread_pool.submit(upload_worker.run)
+            futures.append(thread_pool.submit(upload_worker.run))
 
+        for future in as_completed(futures):
+            # Ensure no exceptions were returned.
+            self.assertIsNone(future.exception())
         thread_pool.shutdown()
+
         print "All threads finished."
 
     @timeout_decorator.timeout(80)

@@ -57,7 +57,8 @@ def LoadAuth(decoratee):
     if self.auth.service is None:  # Check if drive api is built.
       self.auth.Authorize()
     # Ensure that a thread-safe HTTP object is provided.
-    if "param" in kwargs and "http" in kwargs["param"]:
+    if "param" in kwargs and "http" in kwargs["param"] \
+            and kwargs["param"]["http"] is not None:
       self.http = kwargs["param"]["http"]  # If each thread creates a thread-safe HTTP object.
       del kwargs["param"]["http"]
     else:
